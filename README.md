@@ -1,1 +1,86 @@
-# Fine-fescue-
+# Fine-fescue
+# Perl scripts used to call SNP per gene variation 
+
+#! /usr/bin/perl -w
+
+# snps_vcf_from_gene_gff.pl
+
+# This script will take a vcf file with SNPs and a gff3 annotation file and return only SNPs that fall within
+# gene regions
+
+# Cory Hirsch
+# February 25, 2019
+
+use strict;
+use Getopt::Long();
+
+my $usage = "\nUsage: $0 --vcf_in <vcf input file> --gff3_in <GFF3 gene annotation information> --out <Output file> --help <help on usage of script>\n\n";
+
+my ($vcf_in, $gff3_in, $out, $help);
+
+Getopt::Long::GetOptions('vcf_in=s' => \$vcf_in,
+                         'gff3_in=s' => \$gff3_in,
+                         'out=s' => \$out,
+                         'h|help' => \$help
+                         );
+
+if (defined($help)) {
+    die $usage;
+}
+if (!defined($vcf_in) || !defined($gff3_in)) {
+    die $usage;
+}
+if (-e $out) {
+    die "\nOutput file $out already exists\n\n";
+}
+
+# Open GFF3 annotation file and store information for genic regions 'gene'
+open (my $gff3_fh, '<', $gff3_in) || die "\nCan't open $gff3_in\n\n";
+my %gene;
+
+while (my $line1 = <$gff3_fh>) {
+    chomp $line1;
+    my ($chr, undef, $type, $start, $stop, undef, undef, undef, $info) = split ("\t", $line1);
+    if ($type eq 'gene') {
+        $info =~ /^ID=([\w\-\.]*);Name=([\w\-\.]*);gbkey/;
+        my $geneID = $1;
+        my $gene_name = $2;
+
+        print "$info\t$geneID\t$gene_name\n";
+
+        $gene{$chr}{$geneID}{'START'} = $start;
+        $gene{$chr}{$geneID}{'STOP'} = $stop;
+        $gene{$chr}{$geneID}{'NAME'} = $gene_name;
+    }
+}
+close $gff3_fh;
+
+# Open vcf file and print to file if position is within a gene 
+open (my $vcf_in_fh, '<', $vcf_in) || die "\nCan't open $vcf_in\n\n";
+open (my $out_fh, '>', $out) || die "\nCanpt open $out\n\n";
+
+while (my $line2 = <$vcf_in_fh>) {
+    chomp $line2;
+    if ($line2 !~ /^#/) {
+        my @info2 = split ("\t", $line2);
+        my $chr2 = $info2[0];
+        my $pos2 = $info2[1];
+    
+        # Determine if position is within a gene region
+        foreach my $key (keys %{$gene{$chr2}}) {
+            my $start = $gene{$chr2}{$key}{'START'};
+            my $stop = $gene{$chr2}{$key}{'STOP'};
+            my $name = $gene{$chr2}{$key}{'NAME'};
+
+            if ( ($pos2 >= $start) && ($pos2 <= $stop)) {
+                print $out_fh "$line2\tGene\t$name\n";
+                last;
+            }
+	   }
+    }
+}
+
+close $vcf_in_fh;
+close $out_fh;
+
+exit;
