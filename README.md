@@ -1,2 +1,2 @@
 # Fine-fescue
-# Perl scripts used to call SNP per gene variation 
+# Perl scripts used to call SNP per chloroplast gene variation 
