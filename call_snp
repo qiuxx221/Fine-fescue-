@@ -1,0 +1,168 @@
+cd /home/watkinse/qiuxx221/Result_files/Chloroplast_project/Ovina_index
+module load bwa 
+
+bwa index JX871940.1.fasta
+
+
+#Reads from NovoGene
+
+cd /home/watkinse/qiuxx221/Sequencing_reads/Chloroplast_Project/trimmed_reads
+#
+#QC trimmed reads for SNP calling 
+QC score threshold 25, error 0.05 using seqtk
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Beacon_R1.trim.fastq > Beacon_R1_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Beacon_R2.trim.fastq > Beacon_R2_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Quatro_R1.trim.fastq > Quatro_R1_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Quatro_R2.trim.fastq > Quatro_R2_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Navigator_R1.trim.fastq > Navigator_R1_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Navigator_R2.trim.fastq > Navigator_R2_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Shoreline_R1.trim.fastq > Shoreline_R1_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Shoreline_R2.trim.fastq > Shoreline_R2_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Treazure_R1.trim.fastq > Treazure_R1_clean.fastq
+-bash-4.2$ /home/watkinse/qiuxx221/Programs/seqtk/seqtk trimfq -q 0.05 Treazure_R2.trim.fastq > Treazure_R2_clean.fastq
+
+#Map reads to ovina reference genome 
+
+#!/bin/bash
+#PBS -l walltime=1:00:00,nodes=1:ppn=2,mem=10gb
+#PBS -e /home/watkinse/qiuxx221/Result_files/Chloroplast_project/bwa_reads_to_ovina/error
+#PBS -o /home/watkinse/qiuxx221/Result_files/Chloroplast_project/bwa_reads_to_ovina/out
+#PBS -V
+#PBS -N cp_reads_ovina_genome
+#PBS -M qiuxx221@umn.edu
+#PBS -m abe
+#PBS -r n
+
+module load bwa 
+cd /home/watkinse/qiuxx221/Sequencing_reads/Chloroplast_Project/trimmed_reads
+
+bwa mem -t 8 /home/watkinse/qiuxx221/Result_files/Chloroplast_project/Ovina_index/JX871940.1.fasta \
+Beacon_R1_clean.fastq Beacon_R2_clean.fastq > cp_Beacon_reads_to_Ovina.aln-pe.sam
+
+bwa mem -t 8 /home/watkinse/qiuxx221/Result_files/Chloroplast_project/Ovina_index/JX871940.1.fasta \
+Quatro_R1_clean.fastq Quatro_R2_clean.fastq > cp_Quatro_reads_to_Ovina.aln-pe.sam
+
+bwa mem -t 8 /home/watkinse/qiuxx221/Result_files/Chloroplast_project/Ovina_index/JX871940.1.fasta \
+Navigator_R1_clean.fastq Navigator_R2_clean.fastq > cp_Navigator_reads_to_Ovina.aln-pe.sam
+
+bwa mem -t 8 /home/watkinse/qiuxx221/Result_files/Chloroplast_project/Ovina_index/JX871940.1.fasta \
+Shoreline_R1_clean.fastq Shoreline_R2_clean.fastq > cp_Shoreline_reads_to_Ovina.aln-pe.sam
+
+bwa mem -t 8 /home/watkinse/qiuxx221/Result_files/Chloroplast_project/Ovina_index/JX871940.1.fasta \
+Treazure_R1_clean.fastq Treazure_R2_clean.fastq > cp_Treazure_reads_to_Ovina.aln-pe.sam
+
+
+#Fix reads 
+module load java
+/home/watkinse/qiuxx221/Toolkit/bbmap/repair.sh in=Treazure_II_R1.clean.fastq in2=Treazure_II_R2.clean.fastq \
+out=Treazure_II_R1_1.clean.fastq out2=Treazure_II_R2_1.clean.fastq
+
+
+bwa mem -t 8 /home/watkinse/qiuxx221/PhD_work/cp_resequencing/Final_assembly/Festuca_brevipila.fasta \
+Treazure_II_R1.clean.fastq > cp_Treazure_II_reads_to_HF.aln-pe.sam
+
+
+
+module load samtools 
+
+samtools view -S -b cp_Beacon_reads_to_Ovina.aln-pe.sam > Beacon.bam
+samtools view -S -b cp_Navigator_reads_to_Ovina.aln-pe.sam > Navigator.bam
+samtools view -S -b cp_Quatro_reads_to_Ovina.aln-pe.sam > Quatro.bam
+samtools view -S -b cp_Shoreline_reads_to_Ovina.aln-pe.sam > Shoreline.bam
+samtools view -S -b cp_Treazure_reads_to_Ovina.aln-pe.sam > Treazure_II.bam
+
+Files were moved to
+#!/bin/bash
+#PBS -l walltime=1:00:00,nodes=1:ppn=2,mem=10gb
+#PBS -e /home/watkinse/qiuxx221/Result_files/Chloroplast_project/bwa_reads_to_ovina/error
+#PBS -o /home/watkinse/qiuxx221/Result_files/Chloroplast_project/bwa_reads_to_ovina/out
+#PBS -V
+#PBS -N cp_reads_ovina_genome
+#PBS -M qiuxx221@umn.edu
+#PBS -m abe
+#PBS -r n
+
+cd /home/watkinse/qiuxx221/Result_files/Chloroplast_project/bwa_reads_to_ovina
+module load samtools 
+
+samtools sort Beacon.bam -o Beacon_sorted
+samtools sort Navigator.bam -o Navigator_sorted
+samtools sort Quatro.bam -o Quatro_sorted
+samtools sort Shoreline.bam -o Shoreline_sorted
+samtools sort Treazure_II.bam -o Treazure_II_sorted
+
+
+###SNP calling 
+
+
+module load bcftools/1.9
+
+bcftools mpileup -Ou -f JX871940.1.fasta Navigator_sorted.bam | bcftools call --ploidy 1 -Ou -mv | bcftools filter -s LowQual -e '%QUAL<20 || DP< 20' > nav.flt_20.vcf
+
+bcftools mpileup -Ou -f JX871940.1.fasta Quatro_sorted.bam | bcftools call --ploidy 1 -Ou -mv | bcftools filter -s LowQual -e '%QUAL<20 || DP< 20' > quatro.flt_20.vcf
+
+bcftools mpileup -Ou -f JX871940.1.fasta Treazure_II_sorted.bam | bcftools call --ploidy 1 -Ou -mv | bcftools filter -s LowQual -e '%QUAL<20 || DP< 20' > treazure.flt_20.vcf
+
+bcftools mpileup -Ou -f JX871940.1.fasta Shoreline_sorted.bam | bcftools call --ploidy 1 -Ou -mv | bcftools filter -s LowQual -e '%QUAL<20 || DP< 20’ > shoreline.flt_20.vcf
+
+bcftools mpileup -Ou -f JX871940.1.fasta Beacon_sorted.bam | bcftools call --ploidy 1 -Ou -mv | bcftools filter -s LowQual -e '%QUAL<20 || DP< 20' > beacon.flt_20.vcf
+
+
+
+##Output SNP only and with PASS 
+
+module load vcftools_ML/0.1.14
+
+vcftools --vcf beacon.flt_20.vcf --remove-indels --recode --recode-INFO-all --remove-filtered-all --out SNPs_beacon
+vcftools --vcf quatro.flt_20.vcf --remove-indels --recode --recode-INFO-all --remove-filtered-all --out SNPs_quatro
+vcftools --vcf treazure.flt_20.vcf --remove-indels --recode --recode-INFO-all --remove-filtered-all --out SNPs_treazure
+vcftools --vcf shoreline.flt_20.vcf --remove-indels --recode --recode-INFO-all --remove-filtered-all --out SNPs_shore
+vcftools --vcf nav.flt_20.vcf --remove-indels --recode --recode-INFO-all --remove-filtered-all --out SNPs_nav
+
+##Output INDELs only with PASS
+
+vcftools --vcf beacon.flt_20.vcf --keep-only-indels --recode --recode-INFO-all --remove-filtered-all --out INDELs_beacon
+vcftools --vcf quatro.flt_20.vcf  --keep-only-indels --recode --recode-INFO-all --remove-filtered-all --out INDELs_quatro
+vcftools --vcf treazure.flt_20.vcf  --keep-only-indels--recode --recode-INFO-all --remove-filtered-all --out INDELs_treazure
+vcftools --vcf shoreline.flt_20.vcf  --keep-only-indels --recode --recode-INFO-all --remove-filtered-all --out INDELs_shore
+vcftools --vcf nav.flt_20.vcf  --keep-only-indels --recode --recode-INFO-all --remove-filtered-all --out INDELs_nav
+
+#Calling gene position of SNPs 
+
+perl SNP_vcf_from_gene_gff.pl --vcf_in SNPs_beacon.recode.vcf --gff3_in festuca_ovina.gff3 --out Beacon_SNPs.txt
+perl SNP_vcf_from_gene_gff.pl --vcf_in SNPs_nav.recode.vcf --gff3_in festuca_ovina.gff3 --out Nav_SNPs.txt
+perl SNP_vcf_from_gene_gff.pl --vcf_in SNPs_quatro.recode.vcf --gff3_in festuca_ovina.gff3 --out Quatro_SNPs.txt
+
+perl SNP_vcf_from_gene_gff.pl --vcf_in SNPs_shore.recode.vcf --gff3_in festuca_ovina.gff3 --out Shoreline_SNPs.txt
+
+perl SNP_vcf_from_gene_gff.pl --vcf_in SNPs_treazure.recode.vcf --gff3_in festuca_ovina.gff3 --out Treazure_SNPs.txt
+
+#Output final position for table
+
+cut -f 12 Beacon_SNPs.txt | sort | uniq -c > Position_Beacon_SNPs.txt 
+cut -f 12 Nav_SNPs.txt | sort | uniq -c > Position_Nav_SNPs.txt 
+cut -f 12 Quatro_SNPs.txt | sort | uniq -c > Position_Quatro_SNPs.txt 
+cut -f 12 Shoreline_SNPs.txt | sort | uniq -c > Position_Shoreline_SNPs.txt 
+cut -f 12 Treazure_SNPs.txt | sort | uniq -c > Position_Treazure_SNPs.txt 
+
+
+
+#Calling gene position of INDELs
+
+perl SNP_vcf_from_gene_gff.pl --vcf_in INDELs_beacon.recode.vcf --gff3_in festuca_ovina.gff3 --out Beacon_INDELs.txt
+perl SNP_vcf_from_gene_gff.pl --vcf_in INDELs_nav.recode.vcf --gff3_in festuca_ovina.gff3 --out Nav_INDELs.txt
+perl SNP_vcf_from_gene_gff.pl --vcf_in INDELs_quatro.recode.vcf --gff3_in festuca_ovina.gff3 --out Quatro_INDELs.txt
+
+perl SNP_vcf_from_gene_gff.pl --vcf_in INDELs_shore.recode.vcf --gff3_in festuca_ovina.gff3 --out Shoreline_INDELs.txt
+
+perl SNP_vcf_from_gene_gff.pl --vcf_in INDELs_treazure.recode.vcf --gff3_in festuca_ovina.gff3 --out Treazure_INDELs.txt
+
+#Output final position for table
+
+cut -f 12 Beacon_INDELs.txt | sort | uniq -c > Position_Beacon_INDELs.txt 
+cut -f 12 Nav_INDELs.txt | sort | uniq -c > Position_Nav_INDELs.txt 
+cut -f 12 Quatro_INDELs.txt | sort | uniq -c > Position_Quatro_INDELs.txt 
+cut -f 12 Shoreline_INDELs.txt | sort | uniq -c > Position_Shoreline_INDELs.txt 
+cut -f 12 Treazure_INDELs.txt | sort | uniq -c > Position_Treazure_INDELs.txt 
+
+
