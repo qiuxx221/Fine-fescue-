@@ -1,0 +1,18 @@
+p <- ggplot(dat, aes(x=dat$Position, y=dat$Pi)) +
+  geom_line()+ scale_x_continuous(name ="Genome Position (kb)", ,size=12, breaks=seq(0,134.39,2),expand = c(0,0)) +
+  scale_y_continuous(name="Pi diversity",size=12, expand = c(0,0)) +
+  geom_rect(data=rect1, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+            color="black",
+            alpha=0.5,
+            inherit.aes = FALSE) +
+  geom_rect(data=rect2, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
+            color="black",
+            alpha=0.5,
+            inherit.aes = FALSE)
+#Adjust labels 
+p2 <- p + theme(axis.text.x = element_text(color="black", 
+                                           size=12, angle=90),
+                axis.text.y = element_text(face="bold", color="black", 
+                                           size=12, angle=0))
+p2 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+           panel.background = element_blank(), axis.line = element_line(colour = "black"))
