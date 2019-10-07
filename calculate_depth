@@ -1,0 +1,24 @@
+#use previously generated bam file to calculate the number of reads mapped
+samtools flagstat XXX.bam
+#Beacon
+152351 + 0 mapped (1.28% : N/A)
+#Quatro
+77070 + 0 mapped (0.84% : N/A)
+#Shoreline
+68395 + 0 mapped (0.74% : N/A)
+#Navigator 
+90182 + 0 mapped (0.96% : N/A)
+#Treazure II
+45226 + 0 mapped (0.56% : N/A)
+
+#calculate depth 
+
+Total bp 150 PE = 300 bp
+Total ref cp genome size 133,165 
+
+Depth is calculated as total number of reads mapped x reads length x paired end sequencing/ ref cp genome bp 
+Calculated cp genome sequencing depth
+Beacon      Quatro      Shoreline   Navigator II Treazure  
+343.2230691	173.6267037	154.0832801	203.1659971	 101.8871325
+
+
